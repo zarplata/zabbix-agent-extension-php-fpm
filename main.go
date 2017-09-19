@@ -22,6 +22,7 @@ Options:
 	-f --filename <name>         File name [default: /status]
 	-n --dial-network <type>     Type of dial networks [default: unix]
 	-a --dial-address <address>  Dial address [default: /run/php-fpm/php-fpm.sock]
+	-o --opcache <url>           Opcahe stats url
 	-z --zabbix-host <zhost>     Hostname or IP address of zabbix server [default: 127.0.0.1]
 	-p --zabbix-port <zport>     Port of zabbix server [default: 10051]
 	--zabbix-prefix <prefix>     Add part of your prefix for key [default: None]
@@ -63,6 +64,18 @@ Options:
 
 	var zabbixMetrics []*zsend.Metric
 	zabbixMetrics = createMetrics(stats, hostname, zabbixPrefix, zabbixMetrics)
+
+	if opcacheURL, ok := args["--opcache"].(string); ok {
+		fcgiParams["SCRIPT_NAME"] = ""
+		fcgiParams["QUERY_STRING"] = opcacheURL
+		opcacheStats := getOpcacheStats(dialNetwork, dialAddress, fcgiParams)
+		zabbixMetrics = createOpcacheMetrics(
+			opcacheStats,
+			hostname,
+			zabbixPrefix,
+			zabbixMetrics,
+		)
+	}
 
 	packet := zsend.NewPacket(zabbixMetrics)
 	sender := zsend.NewSender(
