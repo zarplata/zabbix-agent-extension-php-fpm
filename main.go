@@ -11,6 +11,10 @@ import (
 
 var version = "[manual build]"
 
+const (
+	noneValue = "None"
+)
+
 func main() {
 	usage := `zabbix-agent-extension-php-fpm
 
@@ -19,13 +23,19 @@ Usage:
 
 Options:
 	-s --script <name>           Script name [default: /status]
-	-f --filename <name>         File name [default: /status]
 	-n --dial-network <type>     Type of dial networks [default: unix]
 	-a --dial-address <address>  Dial address [default: /run/php-fpm/php-fpm.sock]
-	-o --opcache <url>           Opcahe stats url
+	            
+OPCache options:
+	-f --filename <name>         File name [default: None]
+	-o --opcache <url>           Opcahe stats url [default: None]
+	           
+Zabbix options:
 	-z --zabbix-host <zhost>     Hostname or IP address of zabbix server [default: 127.0.0.1]
 	-p --zabbix-port <zport>     Port of zabbix server [default: 10051]
 	--zabbix-prefix <prefix>     Add part of your prefix for key [default: None]
+               
+Misc options:  
 	-h --help                    Show this screen.
 `
 	args, _ := docopt.Parse(usage, nil, true, version, false)
@@ -65,7 +75,9 @@ Options:
 	var zabbixMetrics []*zsend.Metric
 	zabbixMetrics = createMetrics(stats, hostname, zabbixPrefix, zabbixMetrics)
 
-	if opcacheURL, ok := args["--opcache"].(string); ok {
+	opcacheURL := args["--opcache"].(string)
+
+	if opcacheURL != noneValue {
 		fcgiParams["SCRIPT_NAME"] = ""
 		fcgiParams["QUERY_STRING"] = opcacheURL
 		opcacheStats := getOpcacheStats(dialNetwork, dialAddress, fcgiParams)
