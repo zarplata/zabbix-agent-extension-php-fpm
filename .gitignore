@@ -20,6 +20,14 @@ _cgo_export.*
 _testmain.go
 
 *.exe
+*.test
+*.prof
 
-# coverage droppings
-profile.cov
+.out/ 
+vendor/
+
+pkg/
+src/
+zabbix-agent-extension-php-fpm
+zabbix-agent-extension-php-fpm/
+*.tar.xz
